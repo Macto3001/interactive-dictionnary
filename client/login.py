@@ -13,11 +13,9 @@ def login():
     while True:
         username = input("what is you username ?:\n(exit to get out)\n")
         if username == "exit": return user_connected
-        if i := requests.post(dico.server_adress+'/username_exist', json={"username": username}).json():
-            print(i)
+        if requests.post(dico.server_adress+'/username_exist', json={"username": username}).json():
             break
         else: 
-            print(i)
             print("Your username does not exist please retry or register.")
             continue
     while True:
@@ -41,7 +39,7 @@ def register():
             print("You are already Guest. Please retry")
         elif username == "exit": return
         lower_usernames_data = [i.lower() for i in user_data]
-        if username.lower() in lower_usernames_data:
+        if requests.post(dico.server_adress+"/username_exist", json={"username": username}).json():
             print("This username is already taken please try another one.")
         else: break
     while True:
@@ -51,7 +49,7 @@ def register():
             print("The password aren't the same please retry.")
             continue
         else:
-            # user_data[username] = password
+            requests.post(dico.server_adress+"/register_account", json={"username": username, "password": password})
             print(f"Your account had been register as {username}, you can now connect yourself to it.")
             break
         
@@ -77,12 +75,12 @@ def delete_account():
         print("You need to be connected to do that. Please retry once connected")
         return "Guest"
     password = input("Please enter your password:\n")
-    if password == user_data[user_connected]:
+    if requests.post(dico.server_adress+"/password_check", json={"username": user_connected, "password": password}):
         delete = input("Are you sure to want to delete from your account ?:\n(yes or no)\n")
         if delete == "yes": delete = input("Are you really sure of doing that? All your data will be lost and you will never be able to come back from this point:\n(yes or no)\n")
         if delete == "yes": 
             print(f"Say goodbye to {user_connected}")
-            user_data.__delitem__(user_connected)
+            requests.post(dico.server_adress+"/delete_account", json={"username": user_connected, "password": password})
             user_connected = "Guest"
             return None
     return user_connected

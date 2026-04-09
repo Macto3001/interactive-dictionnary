@@ -1,0 +1,19 @@
+changelog here
+06/04/2026:
+	created the reposit
+	added all the files
+	created a readme file for github
+	created a how to run file to explain how to run the script
+	fixed an issue with README.md don't showing on github
+
+09/04/2026:
+	modified client/login.py to make the login system work
+	modified client/main.py to add the login option
+	modified server/server-api to now process and account data on the server
+	modified client/dico.py to fix an missing import os issue
+	deleted how_to_run.md to add it directly into README.md
+	created changelog.txt to store changelog
+	modified README.md to be have more detail
+	created client/local_module and server/local_module as python virtual environment to stock python module
+	
+
