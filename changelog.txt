@@ -13,7 +13,10 @@ changelog here
 	modified client/dico.py to fix an missing import os issue
 	deleted how_to_run.md to add it directly into README.md
 	created changelog.txt to store changelog
-	modified README.md to be have more detail
+	modified README.md to be have more detail(but it didn't sended well)
 	created client/local_module and server/local_module as python virtual environment to stock python module
+
+11/04/2026:
+	fixed README.md witch didn't changed
 	
 
