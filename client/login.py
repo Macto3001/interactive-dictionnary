@@ -1,9 +1,8 @@
 import requests
 import json
-import dico
+import global_var
 
 # here is where you log in
-
 
 user_connected = "Guest"
 user_data = {"admin": "123456e*"}
@@ -11,45 +10,46 @@ user_data = {"admin": "123456e*"}
 def login():
     global user_connected
     while True:
-        username = input("what is you username ?:\n(exit to get out)\n")
-        if username == "exit": return user_connected
-        if requests.post(dico.server_adress+'/username_exist', json={"username": username}).json():
+        username = input("what is you username ?:\n(empty to get out)\n") # asking for username
+        if username == "": return user_connected # verifying if user want to quit
+        if requests.post(global_var.server_adress+'/username_exist', json={"username": username}).json(): # sending server username for check existence
             break
         else: 
             print("Your username does not exist please retry or register.")
             continue
     while True:
-        password = input("What is your password ?:\n")
-        if not requests.post(dico.server_adress+"/password_check", json={"username": username, "password": password}).json():
+        password = input("What is your password ?:\n") # asking for password
+        if not requests.post(global_var.server_adress+"/password_check", json={"username": username, "password": password}).json(): # checking if username and password correspond
             print("This is not the right password please retry.")
             continue
         else:
-            user_connected = username
+            user_connected = username # setting the user
             print(f"Your are now logged in as {username}.")
             break
         
 def register():
     global user_connected
     while True:
-        username = input("What will be your username ?:\n(exit to get out)\n")
+        username = input("What will be your username ?:\n(empty to get out)\n") # asking username
+        # verifying if username valid
         if len(username) < 3:
             print("Your username need to be at least 3 character long. Please retry")
             continue
         elif username.lower() == "guest":
             print("You are already Guest. Please retry")
-        elif username == "exit": return
-        lower_usernames_data = [i.lower() for i in user_data]
-        if requests.post(dico.server_adress+"/username_exist", json={"username": username}).json():
+        elif username == "": return
+
+        if requests.post(global_var.server_adress+"/username_exist", json={"username": username}).json(): # sending data to server
             print("This username is already taken please try another one.")
         else: break
     while True:
-        password = input("What will be your password ?:\n(exit to get out)\n")
+        password = input("What will be your password ?:\n(exit to get out)\n") # asking user for password
         if password == 'exit': return
-        if input("Please confirm your password:\n") != password:
+        if input("Please confirm your password:\n") != password: # password confirmation
             print("The password aren't the same please retry.")
             continue
         else:
-            requests.post(dico.server_adress+"/register_account", json={"username": username, "password": password})
+            requests.post(global_var.server_adress+"/register_account", json={"username": username, "password": password}) # sending account to the server
             print(f"Your account had been register as {username}, you can now connect yourself to it.")
             break
         
@@ -75,12 +75,12 @@ def delete_account():
         print("You need to be connected to do that. Please retry once connected")
         return "Guest"
     password = input("Please enter your password:\n")
-    if requests.post(dico.server_adress+"/password_check", json={"username": user_connected, "password": password}):
+    if requests.post(global_var.server_adress+"/password_check", json={"username": user_connected, "password": password}):
         delete = input("Are you sure to want to delete from your account ?:\n(yes or no)\n")
         if delete == "yes": delete = input("Are you really sure of doing that? All your data will be lost and you will never be able to come back from this point:\n(yes or no)\n")
         if delete == "yes": 
             print(f"Say goodbye to {user_connected}")
-            requests.post(dico.server_adress+"/delete_account", json={"username": user_connected, "password": password})
+            requests.post(global_var.server_adress+"/delete_account", json={"username": user_connected, "password": password})
             user_connected = "Guest"
             return None
     return user_connected
@@ -107,6 +107,9 @@ def connection():
         return user_connected
     except KeyboardInterrupt:
         print("login stopped")
+
+    except UnicodeDecodeError as e:
+        print(f"the input you just used wasn't formatted well please retry: '{e}'")
 
 if __name__ == "__main__":
     connection()

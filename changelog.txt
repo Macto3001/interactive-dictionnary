@@ -27,3 +27,6 @@ changelog here
 	updated the README.md with the new venv system
 	upgraded requirements.txt to have a client and a server version
 	added translation to client/dico.py commentary and to client/main.py input
+	fully added login support for dico client and server side
+	added comment to pretty much all the file
+	fixed traduction of some text who was still in French

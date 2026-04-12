@@ -16,7 +16,7 @@ class Main:
                                "- stop the script (nothing)\n"
                                ": ")
                 if choice == "search": dico.dictionary()
-                elif choice == "compte": login.connection()
+                elif choice == "account": login.connection()
                 elif choice == "": break
                 # elif choice == "admin" and login.user_connected in self.admin_list: self.admin_panel()
                 else: print("This option do not exist.")

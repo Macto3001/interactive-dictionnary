@@ -1,6 +1,7 @@
 import fastapi
 from fastapi import Request
 import pickle
+import sys
 import os
 import uvicorn
 
@@ -18,12 +19,12 @@ if os.path.exists('user_data.pkl'):
 else: user_data: dict = {}
 
 def update(file: str, the_dico: dict):
-	with open(file, 'wb') as f:
-		pickle.dump(the_dico, f)
+	with open(file, 'wb') as f: # opening the file securly
+		pickle.dump(the_dico, f) # ecrasing the new data
 		print(f"'{file}' data had been updated")
 
 @app.get("/get_dico")
-def get_dico_data():
+def get_dico_data() -> dict:
 	return dico
 
 @app.get("/get_user")
@@ -41,20 +42,20 @@ def verify_research(data: dict):
 @app.post("/change_data")
 def change_data(new_data: dict, request: Request) -> None:
 	word = list(new_data.keys())[0]
-	def_data = list(new_data.values())[0]
-	definition = list(new_data.values())[0]["def"]
-	if (len(word) > 30) or (len(defintion) > 500): # if word or def too long
+	def_data = list(new_data.values())[0] # -> def real data
+	definition = list(new_data.values())[0]["def"] # -> def string data
+	if (len(word) > 30) or (len(definition) > 500): # if word or def too long
 		print(f"{request.client.host} tried to send unvalid data")
 		return
 
 	print(f"new definition will be created by {request} :\"{new_data}\"")
-	dico[word] = def_data
-	update("dico.pkl", dico)
+	dico[word] = def_data # adding def
+	update("dico.pkl", dico) # updating with the func
 
 @app.post("/get_info")
 def get_info(defintion: dict) -> dict:
 	print(f"sended data of '{defintion["definition"]}' to client")
-	return dico[defintion["definition"]]
+	return dico[defintion["definition"]] # returning data of only specif
 
 @app.post("/username_exist")
 def username_exist(username: dict, request: Request) -> bool:
@@ -74,11 +75,11 @@ def password_check(account_data: dict, request: Request) -> bool:
 
 @app.post("/register_account")
 def register_user_data(account_data: dict, request: Request):
-	print(account_data)
 	username = account_data["username"]
 	if len(username) >= 3 and username.lower() != ("guest" or "exit") and username not in user_data:
-		user_data[username] = account_data["password"]
+		user_data[username.lower()] = account_data["password"]
 		print(f"{request.client.host} has successfully register '{username}'")
+		update("user_data.pkl", user_data)
 	return f"this should not append aren't your a hacker '{request.client.host}'??"
 
 @app.post("/delete_account")
