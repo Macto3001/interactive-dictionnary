@@ -11,20 +11,24 @@ don't hesitate to upload thing it could help me a lot in this project
 
 ### it's still in developpment so a lot of feature just don't work
 
-### also i made the virtual environement in linux so it don't work on windows for now but that will be add later
-
 ## how to run
 
 first there are **two_version** you can run the *server* and the *client*
 ### run the client:
-on linux terminal: use: 'source (YOUR_PROJECT_DIRECOTRY)/client/local_module/bin/activate' and then you can just launch the main.py with python: 'python (YOUR_PROJECT_DIRECOTRY)/client/main.py'
-
-on windows for now you need to install the dependencies manually with pip see the list [here](#dependencies) and then it's the same in the cmd/powershell: 'python (YOUR_PROJECT_DIRECOTRY)/client/main.py'
+first go to the project folder then create a python venv of the name you want, enter in it, and add the dependencies in requirements.txt and then you can just launch the main.py with python:
+- ```cd <project_dir>```
+- ```python -m venv <venv_name>```
+- on win: ```./<venv_name>/Scripts/activate```, on linux: ```source <venv_name>/bin/activate```
+- ```python -m pip -r client/requirements.txt```
+- ```python client/main.py```
 
 ### run the server:
-on linux terminal: use 'source (YOUR_PROJECT_DIRECOTRY)/server/local_module/bin/activate' and then you need to go to the file directory so: 'cd (YOUR_PROJECT_DIRECOTRY)/server' and finally use uvicorn to create a server with the server-api.py: 'python -m uvicorn server-api:app'
-
-for windows it's the same you just also need the dependencies [here](#dependencies) in your system so go to the server directory: 'cd (YOUR_PROJECT_DIRECOTRY)/server' and then use uvicorn to create a server with the server-api.py: 'python -m uvicorn server-api:app'
+first go to the project folder then create a python venv of the name you want, enter in it, and add the dependencies in requirements.txt and then you can just launch the server-api.py with python:
+- ```cd <project_dir>```
+- ```python -m venv <venv_name>```
+- on win: ```./<venv_name>/Scripts/activate```, on linux: ```source <venv_name>/bin/activate```
+- ```python -m pip -r server/requirements.txt```
+- ```python server/server-api.py```
 
 ## dependencies
 there are 3 dependencies on this project:

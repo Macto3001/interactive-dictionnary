@@ -18,5 +18,12 @@ changelog here
 
 11/04/2026:
 	fixed README.md witch didn't changed
-	
+	fixed venv system for them to work on other computer than mine
+	added verification to lenght of word and definition on both client and server
+	upgraded the login system to be needed to send and modifie data but not completly added yet
+	added requirements.txt to have module easier to install
 
+12/04/2026
+	updated the README.md with the new venv system
+	upgraded requirements.txt to have a client and a server version
+	added translation to client/dico.py commentary and to client/main.py input

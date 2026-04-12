@@ -2,18 +2,19 @@ import fastapi
 from fastapi import Request
 import pickle
 import os
+import uvicorn
+
+ip_adresse = "127.0.0.1"
 
 app = fastapi.FastAPI()
 if os.path.exists('dico.pkl'):
 	with open('dico.pkl', 'rb') as f:
 	    dico = pickle.load(f)
-	    print(dico) # not definitive just to see
 else: dico: dict = {}
 
 if os.path.exists('user_data.pkl'):
 	with open('user_data.pkl', 'rb') as f:
 		user_data = pickle.load(f)
-		print(user_data) # also not definitive
 else: user_data: dict = {}
 
 def update(file: str, the_dico: dict):
@@ -21,11 +22,11 @@ def update(file: str, the_dico: dict):
 		pickle.dump(the_dico, f)
 		print(f"'{file}' data had been updated")
 
-@app.get("/dico_data")
+@app.get("/get_dico")
 def get_dico_data():
 	return dico
 
-@app.get("/user_data")
+@app.get("/get_user")
 def get_user_data():
 	return list(user_data.keys())
 	
@@ -38,13 +39,20 @@ def verify_research(data: dict):
 	return {"definition": defintion}
 
 @app.post("/change_data")
-def change_data(new_data: dict) -> None:
-	print(f"new definition will be created :\"{new_data}\"")
-	dico[list(new_data.keys())[0]] = list(new_data.values())[0]
+def change_data(new_data: dict, request: Request) -> None:
+	word = list(new_data.keys())[0]
+	def_data = list(new_data.values())[0]
+	definition = list(new_data.values())[0]["def"]
+	if (len(word) > 30) or (len(defintion) > 500): # if word or def too long
+		print(f"{request.client.host} tried to send unvalid data")
+		return
+
+	print(f"new definition will be created by {request} :\"{new_data}\"")
+	dico[word] = def_data
 	update("dico.pkl", dico)
 
 @app.post("/get_info")
-def get_info(defintion: dict) -> str:
+def get_info(defintion: dict) -> dict:
 	print(f"sended data of '{defintion["definition"]}' to client")
 	return dico[defintion["definition"]]
 
@@ -80,3 +88,9 @@ def delete_account(account_data: dict, request: Request):
 		user_data.__delitem__(username)
 		print(f"'{request.client.host}' has deleted the account '{username}'")
 	return f"this should not append aren't your a hacker '{request.client.host}'??"
+
+
+if __name__ == "__main__":
+	print(dico)
+	print(user_data)
+	uvicorn.run("server-api:app", host=ip_adresse, port=8000)

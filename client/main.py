@@ -9,17 +9,17 @@ class Main:
         # here is the panel where the user come first
         try:
             while True:
-                choice = input("Bienvenue sur le disctionnaire.\n"
-                               "Que voulez vous faire ?:\n"
-                               "- chercher des mots 'search'\n"
-                               "- gestion du compte 'compte'\n"
-                               "- couper le programme (rien)\n"
+                choice = input("Welcome to the interactive-Dictionnary\n"
+                               "What do you want to do?:\n"
+                               "- search word 'search'\n"
+                               "- account managment 'account'\n"
+                               "- stop the script (nothing)\n"
                                ": ")
                 if choice == "search": dico.dictionary()
                 elif choice == "compte": login.connection()
                 elif choice == "": break
                 # elif choice == "admin" and login.user_connected in self.admin_list: self.admin_panel()
-                else: print("Cette option n'existe pas.")
+                else: print("This option do not exist.")
         except KeyboardInterrupt: print("program ended") # if ctrl+c
 
 if __name__ == "__main__":
