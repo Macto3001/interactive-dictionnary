@@ -1,12 +1,11 @@
 import requests
-import json
 import time
 from datetime import datetime
 import login
 import global_var
 
 print(login.user_connected)
-server_adress = "http://127.0.0.1:8000"
+server_address = global_var.server_address
 
 def dictionary():
 	while True:
@@ -16,7 +15,7 @@ def dictionary():
 			elif len(research) > 30: # if definition too long
 				print("This is too long please retry.")
 				continue
-			definition: str = requests.post(server_adress+"/verify_research", json={'research': research}).json()["definition"] # research the word on the server
+			definition: dict = requests.post(server_address + "/verify_research", json={'research': research}).json()["definition"] # research the word on the server
 			if definition: # if definition already exist
 				while True:
 					print(f'The definition of "{research}" is "{definition['def']}"')
@@ -29,27 +28,27 @@ def dictionary():
 						if login.user_connected == "Guest": # if user not connected
 							print("You need to be connected to modify definition")
 							continue
-						elif input(f"do you want to modify this definition as {login.user_connected}?\n:") == "yes": # asking the user if he want to show who he is
+						elif input(f"do you want to modify this definition as {login.user_connected}?\n:") == "yes": # asking the user if he wants to show who he is
 							new_def = input("What will be the new definition?\n: ")
 							if len(new_def) > 500:
 								print("This is too long the limit is 500 char please retry.")
 								continue
 							data: dict = {"def": new_def, "time": time.time(), "user": login.user_connected} # creating data dict
-							requests.post(server_adress+"/change_data", json={research: data}) # changing the definition on the server side
-							definition = requests.post(server_adress+"/verify_research", json={'research': research}).json()["definition"] # update the definition data
+							requests.post(server_address + "/change_data", json={research: data}) # changing the definition on the server side
+							definition = requests.post(server_address + "/verify_research", json={'research': research}).json()["definition"] # update the definition data
 							continue
 					elif choice == "info":
-						info = requests.post(server_adress+"/get_info", json={"definition": research}).json() # getting server info
+						info = requests.post(server_address + "/get_info", json={"definition": research}).json() # getting server info
 						def_length = len(info["def"])
 						date = datetime.fromtimestamp(info["time"])
 						try: user = info["user"]
 						except KeyError: user = "Guest"
-						print(f"there is {def_length} caractere in this definition, it had been wrote the {date.strftime("%d/%m/%Y")} at {date.strftime("%H:%M:%S")}(UTC+1 CET) by user: {user}.")
+						print(f"there is {def_length} character in this definition, it had been wrote the {date.strftime("%d/%m/%Y")} at {date.strftime("%H:%M:%S")}(UTC+1 CET) by user: {user}.")
 						continue
 					elif choice == "":
 						break
 					else :
-						print("you must respond with a proper anwser")
+						print("you must respond with a proper answer")
 						continue
 			else: # if definition do not exist
 				print(f"'{research}' have no definition yet")
@@ -60,8 +59,8 @@ def dictionary():
 						if len(new_def) > 500:
 							print("It's too long the limit is 500 char for now please retry.")
 							continue
-						requests.post(server_adress+"/change_data", json={research: {"def": new_def, "time": time.time(), "user": login.user_connected}}) # sending new defintion data to the server
-				else: print("Connect youself to create one.")
+						requests.post(server_address + "/change_data", json={research: {"def": new_def, "time": time.time(), "user": login.user_connected}}) # sending new definition data to the server
+				else: print("Connect yourself to create one.")
 		except KeyboardInterrupt: # if ctrl+c is pressed
 			break
 		except requests.exceptions.ConnectionError: # if server not found

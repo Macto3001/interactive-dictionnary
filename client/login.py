@@ -1,5 +1,4 @@
 import requests
-import json
 import global_var
 
 # here is where you log in
@@ -12,14 +11,14 @@ def login():
     while True:
         username = input("what is you username ?:\n(empty to get out)\n") # asking for username
         if username == "": return user_connected # verifying if user want to quit
-        if requests.post(global_var.server_adress+'/username_exist', json={"username": username}).json(): # sending server username for check existence
+        if requests.post(global_var.server_address + '/username_exist', json={"username": username}).json(): # sending server username for check existence
             break
         else: 
             print("Your username does not exist please retry or register.")
             continue
     while True:
         password = input("What is your password ?:\n") # asking for password
-        if not requests.post(global_var.server_adress+"/password_check", json={"username": username, "password": password}).json(): # checking if username and password correspond
+        if not requests.post(global_var.server_address + "/password_check", json={"username": username, "password": password}).json(): # checking if username and password correspond
             print("This is not the right password please retry.")
             continue
         else:
@@ -39,7 +38,7 @@ def register():
             print("You are already Guest. Please retry")
         elif username == "": return
 
-        if requests.post(global_var.server_adress+"/username_exist", json={"username": username}).json(): # sending data to server
+        if requests.post(global_var.server_address + "/username_exist", json={"username": username}).json(): # sending data to server
             print("This username is already taken please try another one.")
         else: break
     while True:
@@ -49,7 +48,7 @@ def register():
             print("The password aren't the same please retry.")
             continue
         else:
-            requests.post(global_var.server_adress+"/register_account", json={"username": username, "password": password}) # sending account to the server
+            requests.post(global_var.server_address + "/register_account", json={"username": username, "password": password}) # sending account to the server
             print(f"Your account had been register as {username}, you can now connect yourself to it.")
             break
         
@@ -75,12 +74,12 @@ def delete_account():
         print("You need to be connected to do that. Please retry once connected")
         return "Guest"
     password = input("Please enter your password:\n")
-    if requests.post(global_var.server_adress+"/password_check", json={"username": user_connected, "password": password}):
+    if requests.post(global_var.server_address + "/password_check", json={"username": user_connected, "password": password}):
         delete = input("Are you sure to want to delete from your account ?:\n(yes or no)\n")
         if delete == "yes": delete = input("Are you really sure of doing that? All your data will be lost and you will never be able to come back from this point:\n(yes or no)\n")
         if delete == "yes": 
             print(f"Say goodbye to {user_connected}")
-            requests.post(global_var.server_adress+"/delete_account", json={"username": user_connected, "password": password})
+            requests.post(global_var.server_address + "/delete_account", json={"username": user_connected, "password": password})
             user_connected = "Guest"
             return None
     return user_connected

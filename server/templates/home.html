@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>html page</title>
+</head>
+<body>
+    <h1>interactive-dictionnary</h1>
+    <h2>def list:</h2>
+    {% for data in dico %}
+    <p>"{{data}}": "{{dico[data]["def"]}}"</p>
+    {% endfor %}
+</body>
+</html>

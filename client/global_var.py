@@ -1,1 +1,1 @@
-server_adress = "http://127.0.0.1:8000"
+server_address = "http://127.0.0.1:8000"
