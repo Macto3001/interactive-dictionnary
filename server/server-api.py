@@ -1,11 +1,12 @@
-import fastapi
-from fastapi import Request
+import fastapi # type: ignore
+from fastapi import Request # type: ignore
 import pickle
 import sys
 import os
-import uvicorn
+import uvicorn # type: ignore
 
 ip_adresse = "127.0.0.1"
+admin_list = ["admin", "macto3001"]
 
 app = fastapi.FastAPI()
 if os.path.exists('dico.pkl'):
@@ -18,10 +19,13 @@ if os.path.exists('user_data.pkl'):
 		user_data = pickle.load(f)
 else: user_data: dict = {}
 
+# update dictionnary
 def update(file: str, the_dico: dict):
 	with open(file, 'wb') as f: # opening the file securly
 		pickle.dump(the_dico, f) # ecrasing the new data
 		print(f"'{file}' data had been updated")
+
+# get data
 
 @app.get("/get_dico")
 def get_dico_data() -> dict:
@@ -31,6 +35,8 @@ def get_dico_data() -> dict:
 def get_user_data():
 	return list(user_data.keys())
 	
+# dico fonction
+
 @app.post("/verify_research")
 def verify_research(data: dict):
 	print(f"received data: {data}")
@@ -44,6 +50,7 @@ def change_data(new_data: dict, request: Request) -> None:
 	word = list(new_data.keys())[0]
 	def_data = list(new_data.values())[0] # -> def real data
 	definition = list(new_data.values())[0]["def"] # -> def string data
+
 	if (len(word) > 30) or (len(definition) > 500): # if word or def too long
 		print(f"{request.client.host} tried to send unvalid data")
 		return
@@ -52,10 +59,19 @@ def change_data(new_data: dict, request: Request) -> None:
 	dico[word] = def_data # adding def
 	update("dico.pkl", dico) # updating with the func
 
+@app.post("/remove_data")
+def remove_data(username: str, password: str, data_word: str = None, data_id: int = None) -> str:
+	if username in admin_list and user_data[username] == password:
+		dico.__delitem__(data_word if data_word else data_id)
+		return f"{data_word if data_word else data_id} succesfully removed"
+	return "something is wrong"
+
 @app.post("/get_info")
 def get_info(defintion: dict) -> dict:
 	print(f"sended data of '{defintion["definition"]}' to client")
 	return dico[defintion["definition"]] # returning data of only specif
+
+# account fonction
 
 @app.post("/username_exist")
 def username_exist(username: dict, request: Request) -> bool:
@@ -90,7 +106,14 @@ def delete_account(account_data: dict, request: Request):
 		print(f"'{request.client.host}' has deleted the account '{username}'")
 	return f"this should not append aren't your a hacker '{request.client.host}'??"
 
+@app.post("/admin_account_del")
+def admin_account_del(username: str, password: str, account_name: str) -> str:
+	if username in admin_list and user_data[username] == password:
+		user_data.__delitem__(account_name)
+		return f"account {account_name} succesfully deleted"
+	return "something went wrong"
 
+# if file not imported
 if __name__ == "__main__":
 	print(dico)
 	print(user_data)
