@@ -35,7 +35,11 @@ def dictionary():
 								print("This is too long the limit is 500 char please retry.")
 								continue
 							data: dict = {"def": new_def, "time": time.time(), "user": login.user_connected} # creating data dict
-							requests.post(server_adress+"/change_data", json={research: data}) # changing the definition on the server side
+							# sending the definition to the server
+							requests.post(server_adress+"/change_data",json={
+								"word": research,
+								"definition": data,
+								"account_data": {"username": login.user_connected, "password": login.user_password,}})
 							definition = requests.post(server_adress+"/verify_research", json={'research': research}).json()["definition"] # update the definition data
 							continue
 					elif choice == "info":
@@ -44,7 +48,8 @@ def dictionary():
 						date = datetime.fromtimestamp(info["time"])
 						try: user = info["user"]
 						except KeyError: user = "Guest"
-						print(f"there is {def_length} caractere in this definition, it had been wrote the {date.strftime("%d/%m/%Y")} at {date.strftime("%H:%M:%S")}(UTC+1 CET) by user: {user}.")
+						print(f"there is {def_length} caractere in this definition.\n"
+			 				f"It had been wrote the {date.strftime("%d/%m/%Y")} at {date.strftime("%H:%M:%S")}(UTC+1 CET) by user: {user}.")
 						continue
 					elif choice == "":
 						break
@@ -53,15 +58,22 @@ def dictionary():
 						continue
 			else: # if definition do not exist
 				print(f"'{research}' have no definition yet")
-				if login.user_connected != "Guest":
-					do_new_def = input(f"Do you want to create one as {login.user_connected} ?:\n")
-					if do_new_def == "yes": # ask to create a new definition
-						new_def = input("what will be the new definition?:\n")
-						if len(new_def) > 500:
-							print("It's too long the limit is 500 char for now please retry.")
-							continue
-						requests.post(server_adress+"/change_data", json={research: {"def": new_def, "time": time.time(), "user": login.user_connected}}) # sending new defintion data to the server
-				else: print("Connect youself to create one.")
+				if login.user_connected == "Guest":
+					print("Connect youself to create one.")
+					continue
+
+				do_new_def = input(f"Do you want to create one as {login.user_connected} ?:\n")
+				if do_new_def == "yes": # ask to create a new definition
+					new_def = input("what will be the new definition?:\n")
+					if len(new_def) > 500:
+						print("It's too long the limit is 500 char for now please retry.")
+						continue
+					 # sending new defintion data to the server
+					requests.post(server_adress+"/change_data",json={
+						"word": research,
+						"definition": {"def": new_def, "time": time.time(), "user": login.user_connected}, 
+						"account_data": {"username": login.user_connected, "password": login.user_password,}})
+		
 		except KeyboardInterrupt: # if ctrl+c is pressed
 			break
 		except requests.exceptions.ConnectionError: # if server not found

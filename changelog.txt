@@ -23,7 +23,7 @@ changelog here
 	upgraded the login system to be needed to send and modifie data but not completly added yet
 	added requirements.txt to have module easier to install
 
-12/04/2026
+12/04/2026:
 	updated the README.md with the new venv system
 	upgraded requirements.txt to have a client and a server version
 	added translation to client/dico.py commentary and to client/main.py input
@@ -31,10 +31,17 @@ changelog here
 	added comment to pretty much all the file
 	fixed traduction of some text who was still in French
 
-19/04/2026
+19/04/2026:
 	created new html page branch
 	created html page test 
 	
-20/04/2026
+20/04/2026:
 	added admin panel and admin fonction
 	added more comment in server-api 
+
+21/04/2026:
+	- added account verification on data modification server side
+	- added change password function to login system
+	- updated overall project code structure for readibility and consistance
+	- reinforced security with account now fully checked everywhere
+	- added idea.txt to root witch contains all the idea i want to add in 

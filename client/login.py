@@ -4,26 +4,32 @@ import global_var
 
 # here is where you log in
 
-user_connected = "Guest"
-user_data = {"admin": "123456e*"}
+user_connected: str = "Guest"
+user_password: str = ""
 
-def login():
+def login(username: str = None, password: str = None):
     global user_connected
+    global user_password
     while True:
-        username = input("what is you username ?:\n(empty to get out)\n") # asking for username
+        if not username:
+            username = input("what is you username ?:\n(empty to get out)\n") # asking for username
         if username == "": return user_connected # verifying if user want to quit
-        if requests.post(global_var.server_adress+'/username_exist', json={"username": username}).json(): # sending server username for check existence
+        if requests.post(global_var.server_adress+'/username_exist', 
+                         json={"username": username}).json(): # sending server username for check existence
             break
         else: 
             print("Your username does not exist please retry or register.")
             continue
     while True:
-        password = input("What is your password ?:\n") # asking for password
-        if not requests.post(global_var.server_adress+"/password_check", json={"username": username, "password": password}).json(): # checking if username and password correspond
+        if not password:
+            password = input("What is your password ?:\n") # asking for password
+        if not requests.post(global_var.server_adress+"/password_check",
+                            json={"username": username, "password": password}).json(): # checking if username and password correspond
             print("This is not the right password please retry.")
             continue
         else:
             user_connected = username # setting the user
+            user_password = password # setting the password
             print(f"Your are now logged in as {username}.")
             break
         
@@ -50,7 +56,8 @@ def register():
             continue
         else:
             requests.post(global_var.server_adress+"/register_account", json={"username": username, "password": password}) # sending account to the server
-            print(f"Your account had been register as {username}, you can now connect yourself to it.")
+            print(f"Your account had been register as {username}")
+            login(username, password)
             break
         
 def logout():
@@ -84,6 +91,15 @@ def delete_account():
             user_connected = "Guest"
             return None
     return user_connected
+
+def change_password():
+    current_password = input("what is your current password?:\nif you don't remember please contact an admin(macto3001 on discord)")
+    if not requests.post(global_var.server_adress+"/password_check",
+                          json={"username": user_connected, "password": current_password}).json(): # checking if username and password correspond
+        print("This is not the right password please retry.")
+        return
+    new_password = input("what will be your new password?:\n")
+    
 def connection():
     try:
         while True:

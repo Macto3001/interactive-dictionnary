@@ -22,7 +22,20 @@ class Main:
                 elif choice == "": break
                 elif choice == "admin" and login.user_connected in self.admin_list: self.admin_panel()
                 else: print("This option do not exist.")
-        except KeyboardInterrupt: print("program ended") # if ctrl+c
+
+        # exeption catch
+        except KeyboardInterrupt: print("\nprogram ended") # if ctrl + C
+        except EOFError: print("\nprogram stopped") # if ctrl + D
+        except requests.exceptions.ConnectionError: # if server not found 
+            print("The server seems to have issues or being offline. Please contact an admin or retry later.")
+            
+        except requests.exceptions.Timeout: # if client cannot connect
+            print("Connection timed out. Please check your internet connection or retry later.")
+
+        except requests.exceptions.RequestException as error: # every other server error
+            print(f"The request went wrong: {error}")
+
+        except Exception as e: print(f"\nSomething went wrong but i don't why. Error:\n{e}")
 
     def admin_panel(self):
         while True:

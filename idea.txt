@@ -1,0 +1,9 @@
+- auto login system
+- change password system
+- tkinter interface
+- html web interface
+- adding password check for each operation
+- reworking admin list system
+- adding more connection server test
+- adding auto-login after register
+- making login function more versatile
