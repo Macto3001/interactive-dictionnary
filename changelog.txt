@@ -44,4 +44,13 @@ changelog here
 	- added change password function to login system
 	- updated overall project code structure for readibility and consistance
 	- reinforced security with account now fully checked everywhere
-	- added idea.txt to root witch contains all the idea i want to add in 
+	- added idea.txt to root witch contains all the idea i want to add in
+	- handeld more program error
+
+22/04/2026:
+	- added new token system for more security for account
+	- added auto-connect system 
+	- added new api for managing token 
+	- password no longer need to be passed at every connection only all 30 days
+	- added more text in dico.py when needed
+	- added more idea to idea.txt

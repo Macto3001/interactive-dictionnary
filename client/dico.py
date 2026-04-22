@@ -36,10 +36,14 @@ def dictionary():
 								continue
 							data: dict = {"def": new_def, "time": time.time(), "user": login.user_connected} # creating data dict
 							# sending the definition to the server
-							requests.post(server_adress+"/change_data",json={
+							response = requests.post(server_adress+"/change_data",json={
 								"word": research,
 								"definition": data,
-								"account_data": {"username": login.user_connected, "password": login.user_password,}})
+								"token": login.load_token()})
+							if response.status_code == 200:
+								print("Definition added succesfully")
+							else: print("Something went wrong while adding the definition sorry.")
+
 							definition = requests.post(server_adress+"/verify_research", json={'research': research}).json()["definition"] # update the definition data
 							continue
 					elif choice == "info":
@@ -69,10 +73,13 @@ def dictionary():
 						print("It's too long the limit is 500 char for now please retry.")
 						continue
 					 # sending new defintion data to the server
-					requests.post(server_adress+"/change_data",json={
+					response = requests.post(server_adress+"/change_data",json={
 						"word": research,
 						"definition": {"def": new_def, "time": time.time(), "user": login.user_connected}, 
-						"account_data": {"username": login.user_connected, "password": login.user_password,}})
+						"token": login.load_token()})
+					if response.status_code == 200:
+						print("Definition added succesfully")
+					else: print("Something went wrong while adding the definition sorry.")
 		
 		except KeyboardInterrupt: # if ctrl+c is pressed
 			break

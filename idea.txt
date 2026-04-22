@@ -1,9 +1,12 @@
-- auto login system
-- change password system
+- [x] auto login system
+- [x] change password system
 - tkinter interface
 - html web interface
-- adding password check for each operation
+- [x] adding password check for each operation
 - reworking admin list system
 - adding more connection server test
-- adding auto-login after register
+- [x] adding auto-login after register
 - making login function more versatile
+- replace every error with HTTP exeption
+- adding anti-DDOS protocol
+- rebuilding dico.py with more function

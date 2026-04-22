@@ -1,29 +1,33 @@
 import fastapi # type: ignore
-from fastapi import Request # type: ignore
-import pickle
-import sys
-import os
+from fastapi import Request, HTTPException # type: ignore
 import uvicorn # type: ignore
+import pickle
+import os
+import uuid
+from datetime import datetime, timedelta
 
-ip_adresse = "127.0.0.1"
+ip_adress = "127.0.0.1"
 admin_list = ["admin", "macto3001"]
 
 app = fastapi.FastAPI()
-if os.path.exists('dico.pkl'):
-	with open('dico.pkl', 'rb') as f:
-	    dico = pickle.load(f)
-else: dico: dict = {}
 
-if os.path.exists('user_data.pkl'):
-	with open('user_data.pkl', 'rb') as f:
-		user_data = pickle.load(f)
-else: user_data: dict = {}
+# load pkl file
+def load_pkl(pkl_name):
+	if os.path.exists(pkl_name):
+		with open(pkl_name, 'rb') as f:
+			return pickle.load(f)
+	else: return {}
 
-# update dictionnary
+# update pkl file
 def update(file: str, the_dico: dict):
 	with open(file, 'wb') as f: # opening the file securly
 		pickle.dump(the_dico, f) # ecrasing the new data
 		print(f"'{file}' data had been updated")
+
+dico = load_pkl('dico.pkl')
+user_data = load_pkl('user_data.pkl')
+active_token = load_pkl('active_token.pkl')
+
 
 # get data
 
@@ -47,7 +51,9 @@ def verify_research(data: dict):
 
 @app.post("/change_data")
 def change_data(package: dict, request: Request) -> None:
-	password_check(package["account_data"], request) # verify the password for security
+	reponse = verify_token(package["token"], request) # verify the password for security
+	if not reponse["username"]:
+		raise HTTPException(status_code=401, details="unvalid token")
 
 	word = package["word"]
 	def_data = package["definition"] # -> def real data
@@ -120,8 +126,44 @@ def admin_account_del(username: str, password: str, account_name: str, request: 
 		return f"{request.client.host} as succesfully deleted account {account_name}"
 	return f"'{request.client.host}' tried deleting {account_name} but something went wrong"
 
+@app.post("/create_token")
+def create_token(account_data: dict, request: Request):
+	if not password_check(account_data, request):
+		raise HTTPException(status_code=401, detail="invalid account data")
+	token = str(uuid.uuid4())
+	expire_time = datetime.now() + timedelta(days=30) # 30 jours
+	active_token[token] = {
+		"username": account_data["username"], # nom du compte
+		"expires_at": expire_time, # valable 30 jours
+	}
+	update("active_token.pkl", active_token) # save token in pkl file
+	print(f"{request.client.host} has made a token for {account_data["username"]} witch is {token}"
+	   		f"It will expire the {expire_time.strftime("%d/%m/%Y")} at {expire_time.strftime("%H:%M:%S")}")
+	return {"token": token}
+
+@app.post("/verify_token")
+def verify_token(token_json: dict, request: Request):
+	token = token_json["token"]
+	if token not in active_token: 
+		print(f"someone sended an invalid token: {token}")
+		raise HTTPException(status_code=401, detail="invalid token")
+	
+	if active_token[token]["expires_at"] < datetime.now():
+		active_token.pop(token, None)
+		update("active_token.pkl", active_token) # update token
+		print(f"{request.client.host} sended an expired token: {token}")
+		raise HTTPException(status_code=401, detail="token expired")
+	return {"username": active_token[token]["username"]}
+
+@app.post("del_token")
+def del_token(token: str, request: Request):
+	active_token.pop(token, None)
+	update("active_token.pkl", active_token) # update token
+	print(f"{request.client.host} had delete token {token}")
+	return {"message": "token deleted"}
+
 # if file not imported
 if __name__ == "__main__":
 	print(dico)
 	print(user_data)
-	uvicorn.run("server-api:app", host=ip_adresse, port=8000)
+	uvicorn.run("server-api:app", host=ip_adress, port=8000)

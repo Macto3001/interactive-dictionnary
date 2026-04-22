@@ -10,6 +10,7 @@ class Main:
     def panel(self):
         # here is the panel where the user come first
         try:
+            login.auto_connect()
             while True:
                 choice = input("Welcome to the interactive-Dictionnary\n"
                                "What do you want to do?:\n"
@@ -35,7 +36,7 @@ class Main:
         except requests.exceptions.RequestException as error: # every other server error
             print(f"The request went wrong: {error}")
 
-        except Exception as e: print(f"\nSomething went wrong but i don't why. Error:\n{e}")
+        # except Exception as e: print(f"\nSomething went wrong but i don't why. Error:\n{e}")
 
     def admin_panel(self):
         while True:

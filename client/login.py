@@ -1,15 +1,28 @@
 import requests
 import json
 import global_var
+import os
 
 # here is where you log in
 
 user_connected: str = "Guest"
-user_password: str = ""
+
+def load_token() -> str:
+    path = "auto_connect/token.json"
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+    else: return {}
+
+def update_token(token):
+   with open("auto_connect/token.json", "w") as f:
+        json.dump(token, f)
 
 def login(username: str = None, password: str = None):
     global user_connected
-    global user_password
+    if user_connected != "Guest":
+        print("you are already connected please logout")
+        return
     while True:
         if not username:
             username = input("what is you username ?:\n(empty to get out)\n") # asking for username
@@ -23,14 +36,18 @@ def login(username: str = None, password: str = None):
     while True:
         if not password:
             password = input("What is your password ?:\n") # asking for password
+        
+        account_package = {"username": username, "password": password}
         if not requests.post(global_var.server_adress+"/password_check",
-                            json={"username": username, "password": password}).json(): # checking if username and password correspond
+                            json=account_package).json(): # checking if username and password correspond
             print("This is not the right password please retry.")
             continue
         else:
             user_connected = username # setting the user
-            user_password = password # setting the password
             print(f"Your are now logged in as {username}.")
+            token = requests.post(global_var.server_adress+"/create_token", json=account_package).json() # creating token for 30 days
+            update_token(token)
+            print("token had been created you can now connect without auth within 30 days")
             break
         
 def register():
@@ -62,6 +79,7 @@ def register():
         
 def logout():
     global user_connected
+    token = load_token()
     if user_connected != "Guest":
         print(f"You are connected as {user_connected} right now.")
     else: 
@@ -70,12 +88,16 @@ def logout():
     disconnect = input("Are you sure to want to disconnect from your account ?:\n(yes or no)\n")
     if disconnect == "yes":
         print("You have successfully been disconnected.")
+        requests.post(global_var.server_adress+"/del_token", json=token)
+        update_token({})
+        print("your token had been deleted")
         user_connected = "Guest"
         return
     return
     
 def delete_account():
     global user_connected
+    token = load_token()
     if user_connected != "Guest":
         print(f"You are connected as {user_connected} right now.")
     else: 
@@ -89,6 +111,9 @@ def delete_account():
             print(f"Say goodbye to {user_connected}")
             requests.post(global_var.server_adress+"/delete_account", json={"username": user_connected, "password": password})
             user_connected = "Guest"
+            requests.post(global_var.server_adress+"/del_token", json=token)
+            update_token({})
+            print("your token had been deleted")
             return None
     return user_connected
 
@@ -99,6 +124,20 @@ def change_password():
         print("This is not the right password please retry.")
         return
     new_password = input("what will be your new password?:\n")
+
+def auto_connect():
+    global user_connected
+    token = load_token()
+    if not token:
+        return None
+    if token != {}:
+        response = requests.post(global_var.server_adress+"/verify_token", json=token)
+        if response.status_code == 200:
+            user_connected = response.json()["username"]
+            print(f"connected to {user_connected}")
+        else:
+            print("token is not valid please login yourself")
+            login()
     
 def connection():
     try:
@@ -108,6 +147,7 @@ def connection():
                            "- login?('login')\n"
                            "- register('register')\n"
                            "- disconnect('disconnect')\n"
+                           "- change password('password')\n"
                            "- delete account('delete')\n"
                            "- get out (nothing)\n")
 
