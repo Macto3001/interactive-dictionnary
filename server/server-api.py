@@ -5,6 +5,7 @@ import pickle
 import os
 import uuid
 from datetime import datetime, timedelta
+from functools import wraps
 
 ip_adress = "127.0.0.1"
 admin_list = ["admin", "macto3001"]
@@ -66,16 +67,6 @@ def change_data(package: dict, request: Request) -> None:
 	dico[word] = def_data # adding def
 	update("dico.pkl", dico) # updating with the func
 
-@app.post("/remove_data")
-def remove_data(username: str, password: str, request: Request, data_word: str = None, data_id: int = None) -> str:
-	if not data_word and not data_id:
-		return "there is nothing to delete"
-	
-	if username in admin_list and password_check({"username": username, "password": password}, request):
-		dico.__delitem__(data_word if data_word else data_id)
-		return f"'{request.client.host}' as uccesfully removed {data_word if data_word else data_id}"
-	
-	return f"'{request.client.host}' tried removing {data_word} but something went wrong"
 
 @app.post("/get_info")
 def get_info(defintion: dict, request: Request) -> dict:
@@ -119,12 +110,6 @@ def delete_account(account_data: dict, request: Request):
 		print(f"'{request.client.host}' has deleted the account '{username}'")
 	return f"this should not append aren't your a hacker '{request.client.host}'??"
 
-@app.post("/admin_account_del")
-def admin_account_del(username: str, password: str, account_name: str, request: Request) -> str:
-	if username in admin_list and password_check({"username": username, "password": password}, request):
-		user_data.__delitem__(account_name)
-		return f"{request.client.host} as succesfully deleted account {account_name}"
-	return f"'{request.client.host}' tried deleting {account_name} but something went wrong"
 
 @app.post("/create_token")
 def create_token(account_data: dict, request: Request):
@@ -161,6 +146,48 @@ def del_token(token: str, request: Request):
 	update("active_token.pkl", active_token) # update token
 	print(f"{request.client.host} had delete token {token}")
 	return {"message": "token deleted"}
+
+# admin function
+
+def admin_dec(function):
+	@wraps(function)
+	def wrapper(*agrs, **kwargs):
+		username = kwargs.get("username")
+		password = kwargs.get("password")
+		request = kwargs.get("request")
+
+		if username in admin_list and password_check({"username": username, "password": password}, request):
+			function(*agrs, **kwargs)
+		else: raise HTTPException(status_code=401, detail="invalid admin account")
+
+	return wrapper
+
+@app.post("/is_admin")
+def is_admin(token: dict) -> bool:
+	token_uuid = token["token"]
+	if (token_uuid in active_token) and (active_token[token_uuid]["username"] in admin_list):
+		return True
+	return False
+
+@app.post("new_admin")
+@admin_dec
+def new_admin(username: str, password: str, account_name: str, request: Request):
+	admin_list.append(account_name)
+
+@app.post("/remove_data")
+@admin_dec
+def remove_data(username: str, password: str, request: Request, data_word: str = None, data_id: int = None) -> str:
+	if not data_word and not data_id:
+		return "there is nothing to delete"
+
+	dico.__delitem__(data_word if data_word else data_id)
+	return f"'{request.client.host}' as uccesfully removed {data_word if data_word else data_id}"
+
+@app.post("/admin_account_del")
+@admin_dec
+def admin_account_del(username: str, password: str, account_name: str, request: Request) -> str:
+	user_data.__delitem__(account_name)
+	return f"{request.client.host} as succesfully deleted account {account_name}"
 
 # if file not imported
 if __name__ == "__main__":

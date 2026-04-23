@@ -5,8 +5,8 @@ import requests
 
 class Main:
     def __init__(self):
-        self.admin_list = ('admin', 'macto3001')
-
+        pass
+    
     def panel(self):
         # here is the panel where the user come first
         try:
@@ -21,7 +21,7 @@ class Main:
                 if choice == "search": dico.dictionary()
                 elif choice == "account": login.connection()
                 elif choice == "": break
-                elif choice == "admin" and login.user_connected in self.admin_list: self.admin_panel()
+                elif choice == "admin" and requests.post(global_var.server_adress+"/is_admin", json=login.load_token()).json(): self.admin_panel()
                 else: print("This option do not exist.")
 
         # exeption catch

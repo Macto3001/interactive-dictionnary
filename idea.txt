@@ -1,8 +1,8 @@
 - [x] auto login system
 - [x] change password system
 - tkinter interface
-- html web interface
-- [x] adding password check for each operation
+- html web interfaceadding
+- [x]  password check for each operation
 - reworking admin list system
 - adding more connection server test
 - [x] adding auto-login after register
@@ -10,3 +10,5 @@
 - replace every error with HTTP exeption
 - adding anti-DDOS protocol
 - rebuilding dico.py with more function
+- adding change username option in login
+- adding all the history to def - maybe consider data_base for that
