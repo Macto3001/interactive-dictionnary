@@ -44,12 +44,45 @@ class Main:
             "What do you want to do?\n"
             "- see data list 'data_list'\n"
             "- see user list 'user_list'\n"
+            "- see admin list 'admin_list'\n"
+            "- add new admin 'new_admin'\n"
+            "- delete admin 'del_admin'\n"
             "- delete def 'del_def'\n"
             "- delete user 'del_user'\n"
             "- exit (nothing)\n"
             ": ")
             if admin_choice == "data_list": print(f"dico data:\n{requests.get(global_var.server_adress+"/get_dico").json()}")
             elif admin_choice == "user_list": print(f"user data:\n{requests.get(global_var.server_adress+"/get_user").json()}")
+            elif admin_choice == "admin_list": print(f"admin list:\n{requests.get(global_var.server_adress+"/get_admin", params={
+                "username": login.user_connected,
+                "password": input("please enter your password\n: "),
+                }).json()}")
+
+            elif admin_choice == "new_admin":
+                admin_name = input("who will that be?\n: ")
+                password = input("please enter your password\n: ")
+                response = requests.post(global_var.server_adress+"/new_admin", params={
+                    "username": login.user_connected,
+                    "password": password,
+                    "account_name": admin_name,
+                })
+
+                if response.status_code == 200: print(f"admin {admin_name} succesfully added")
+                elif response.status_code == 401: print(f"password was wrong please retry")
+                else: print("something went wrong, please retry")
+                
+            elif admin_choice == "del_admin":
+                admin_name = input("who will that be?\n: ")
+                password = input("please enter your password\n: ")
+                response = requests.post(global_var.server_adress+"/del_admin", params={
+                    "username": login.user_connected,
+                    "password": password,
+                    "admin_name": admin_name,
+                })
+                
+                if response.status_code == 200: print(f"admin {admin_name} succesfully removed")
+                elif response.status_code == 401: print(f"password was wrong please retry")
+                else: print("something went wrong, please retry")
 
             elif admin_choice == "del_def": 
                 deletion = input("what do you want to delete?\n: ")

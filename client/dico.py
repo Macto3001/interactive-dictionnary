@@ -5,7 +5,6 @@ from datetime import datetime
 import login
 import global_var
 
-print(login.user_connected)
 server_adress = "http://127.0.0.1:8000"
 
 def dictionary():

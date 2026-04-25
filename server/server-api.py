@@ -8,26 +8,28 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 ip_adress = "127.0.0.1"
-admin_list = ["admin", "macto3001"]
 
 app = fastapi.FastAPI()
 
 # load pkl file
 def load_pkl(pkl_name):
-	if os.path.exists(pkl_name):
-		with open(pkl_name, 'rb') as f:
+	if os.path.exists("storage/"+pkl_name):
+		with open("storage/"+pkl_name, 'rb') as f:
 			return pickle.load(f)
 	else: return {}
 
 # update pkl file
-def update(file: str, the_dico: dict):
-	with open(file, 'wb') as f: # opening the file securly
-		pickle.dump(the_dico, f) # ecrasing the new data
+def update(file: str, data: any):
+	with open("storage/"+file, 'wb') as f: # opening the file securly
+		pickle.dump(data, f) # ecrasing the new data
 		print(f"'{file}' data had been updated")
 
 dico = load_pkl('dico.pkl')
 user_data = load_pkl('user_data.pkl')
 active_token = load_pkl('active_token.pkl')
+admin_list = load_pkl('admin_list.pkl')
+if admin_list == {}:
+    admin_list = ["admin"]
 
 
 # get data
@@ -37,7 +39,7 @@ def get_dico_data() -> dict:
 	return dico
 
 @app.get("/get_user")
-def get_user_data():
+def get_user_data() -> list:
 	return list(user_data.keys())
 	
 # dico fonction
@@ -110,6 +112,7 @@ def delete_account(account_data: dict, request: Request):
 		print(f"'{request.client.host}' has deleted the account '{username}'")
 	return f"this should not append aren't your a hacker '{request.client.host}'??"
 
+# token
 
 @app.post("/create_token")
 def create_token(account_data: dict, request: Request):
@@ -169,16 +172,35 @@ def is_admin(token: dict) -> bool:
 		return True
 	return False
 
-@app.post("new_admin")
+@app.get("/get_admin")
+def get_admin(username: str, password: str, request: Request):
+	return admin_list
+
+@app.post("/new_admin")
 @admin_dec
 def new_admin(username: str, password: str, account_name: str, request: Request):
-	admin_list.append(account_name)
+	if account_name in user_data:
+		admin_list.append(account_name)
+		update("admin_list.pkl", admin_list)
+	else: raise HTTPException(status_code=404, detail="user not found")
+ 
+@app.post("/del_admin")
+@admin_dec
+def del_admin(username: str, password: str, admin_name: str, request: Request):
+    if admin_name == "admin":
+        raise HTTPException(401, detail="cannot delete owner")
+    if admin_name in admin_list:
+        admin_list.remove(admin_name)
+        update("admin_list.pkl", admin_list)
+    else: raise HTTPException(status_code=404, detail="admin not found")
 
 @app.post("/remove_data")
 @admin_dec
 def remove_data(username: str, password: str, request: Request, data_word: str = None, data_id: int = None) -> str:
 	if not data_word and not data_id:
 		return "there is nothing to delete"
+
+	elif data_word == "admin": raise HTTPException(401, "cannot delete owner")
 
 	dico.__delitem__(data_word if data_word else data_id)
 	return f"'{request.client.host}' as uccesfully removed {data_word if data_word else data_id}"

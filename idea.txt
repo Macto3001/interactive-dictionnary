@@ -1,9 +1,9 @@
 - [x] auto login system
 - [x] change password system
 - tkinter interface
-- html web interfaceadding
-- [x]  password check for each operation
-- reworking admin list system
+- html web interface
+- [x] password check for each operation
+- [x] reworking admin list system
 - adding more connection server test
 - [x] adding auto-login after register
 - making login function more versatile
@@ -12,3 +12,4 @@
 - rebuilding dico.py with more function
 - adding change username option in login
 - adding all the history to def - maybe consider data_base for that
+- restructure server pickle stockage architecture

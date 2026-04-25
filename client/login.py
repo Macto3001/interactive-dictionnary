@@ -18,14 +18,16 @@ def update_token(token):
    with open("auto_connect/token.json", "w") as f:
         json.dump(token, f)
 
-def login(username: str = None, password: str = None):
+def login(username_arg: str = None, password_arg: str = None):
     global user_connected
     if user_connected != "Guest":
         print("you are already connected please logout")
-        return
+        if not logout():
+            return
     while True:
-        if not username:
+        if not username_arg:
             username = input("what is you username ?:\n(empty to get out)\n") # asking for username
+        else: username = username_arg
         if username == "": return user_connected # verifying if user want to quit
         if requests.post(global_var.server_adress+'/username_exist', 
                          json={"username": username}).json(): # sending server username for check existence
@@ -34,8 +36,9 @@ def login(username: str = None, password: str = None):
             print("Your username does not exist please retry or register.")
             continue
     while True:
-        if not password:
+        if not password_arg:
             password = input("What is your password ?:\n") # asking for password
+        else: password= password_arg
         
         account_package = {"username": username, "password": password}
         if not requests.post(global_var.server_adress+"/password_check",
@@ -77,14 +80,14 @@ def register():
             login(username, password)
             break
         
-def logout():
+def logout() -> bool:
     global user_connected
     token = load_token()
     if user_connected != "Guest":
         print(f"You are connected as {user_connected} right now.")
     else: 
         print("You need to be connected to do that. Please retry once connected")
-        return 
+        return False
     disconnect = input("Are you sure to want to disconnect from your account ?:\n(yes or no)\n")
     if disconnect == "yes":
         print("You have successfully been disconnected.")
@@ -92,8 +95,8 @@ def logout():
         update_token({})
         print("your token had been deleted")
         user_connected = "Guest"
-        return
-    return
+        return True
+    return False
     
 def delete_account():
     global user_connected
