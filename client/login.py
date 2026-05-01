@@ -14,7 +14,7 @@ def load_token() -> str:
             return json.load(f)
     else: return {}
 
-def update_token(token):
+def update_token(token) -> None:
    with open("auto_connect/token.json", "w") as f:
         json.dump(token, f)
 
@@ -30,7 +30,7 @@ def login(username_arg: str = None, password_arg: str = None):
         else: username = username_arg
         if username == "": return user_connected # verifying if user want to quit
         if requests.post(global_var.server_adress+'/username_exist', 
-                         json={"username": username}).json(): # sending server username for check existence
+            json={"username": username}).json(): # sending server username for check existence
             break
         else: 
             print("Your username does not exist please retry or register.")
@@ -53,10 +53,12 @@ def login(username_arg: str = None, password_arg: str = None):
             print("token had been created you can now connect without auth within 30 days")
             break
         
-def register():
+def register(username_arg: str = None, password_arg: str = None):
     global user_connected
     while True:
-        username = input("What will be your username ?:\n(empty to get out)\n") # asking username
+        if not username_arg:
+            username = input("What will be your username ?:\n(empty to get out)\n") # asking username
+        else: username = username_arg
         # verifying if username valid
         if len(username) < 3:
             print("Your username need to be at least 3 character long. Please retry")
@@ -69,7 +71,9 @@ def register():
             print("This username is already taken please try another one.")
         else: break
     while True:
-        password = input("What will be your password ?:\n(exit to get out)\n") # asking user for password
+        if not password_arg:
+            password = input("What will be your password ?:\n(exit to get out)\n") # asking user for password
+        else: password = password_arg
         if password == 'exit': return
         if input("Please confirm your password:\n") != password: # password confirmation
             print("The password aren't the same please retry.")
@@ -80,7 +84,7 @@ def register():
             login(username, password)
             break
         
-def logout() -> bool:
+def logout(forced: bool = False) -> bool:
     global user_connected
     token = load_token()
     if user_connected != "Guest":
@@ -88,7 +92,10 @@ def logout() -> bool:
     else: 
         print("You need to be connected to do that. Please retry once connected")
         return False
-    disconnect = input("Are you sure to want to disconnect from your account ?:\n(yes or no)\n")
+    
+    if forced: disconnect = "yes"
+    else: disconnect = input("Are you sure to want to disconnect from your account ?:\n(yes or no)\n")
+    
     if disconnect == "yes":
         print("You have successfully been disconnected.")
         requests.post(global_var.server_adress+"/del_token", json=token)
@@ -98,18 +105,27 @@ def logout() -> bool:
         return True
     return False
     
-def delete_account():
+def delete_account(username_arg: str = "", password_arg: str = "", forced: str = False):
     global user_connected
     token = load_token()
-    if user_connected != "Guest":
-        print(f"You are connected as {user_connected} right now.")
+    if username_arg == "": username = username_arg
+    else: username = user_connected
+    
+    if username != "Guest":
+        print(f"You are connected as {username} right now.")
     else: 
         print("You need to be connected to do that. Please retry once connected")
         return "Guest"
-    password = input("Please enter your password:\n")
-    if requests.post(global_var.server_adress+"/password_check", json={"username": user_connected, "password": password}):
-        delete = input("Are you sure to want to delete from your account ?:\n(yes or no)\n")
-        if delete == "yes": delete = input("Are you really sure of doing that? All your data will be lost and you will never be able to come back from this point:\n(yes or no)\n")
+    
+    if password_arg: password = password_arg
+    else: password = input("Please enter your password:\n")
+    
+    if requests.post(global_var.server_adress+"/password_check", json={"username": username, "password": password}):
+        if forced: delete = "yes"
+        else: delete = input("Are you sure to want to delete from your account ?:\n(yes or no)\n")
+        
+        if delete == "yes" and not forced: 
+            delete = input("Are you really sure of doing that? All your data will be lost and you will never be able to come back from this point:\n(yes or no)\n")
         if delete == "yes": 
             print(f"Say goodbye to {user_connected}")
             requests.post(global_var.server_adress+"/delete_account", json={"username": user_connected, "password": password})
@@ -120,13 +136,56 @@ def delete_account():
             return None
     return user_connected
 
-def change_password():
-    current_password = input("what is your current password?:\nif you don't remember please contact an admin(macto3001 on discord)")
+def change_username(current_username_arg: str = "", new_username_arg: str = "", password_arg: str = "", force: bool = False):
+    if current_username_arg == "": 
+        current_username_arg = user_connected
+    
+    if password_arg == "":
+        password_arg = input("what is your password?\n: ")
+        
     if not requests.post(global_var.server_adress+"/password_check",
-                          json={"username": user_connected, "password": current_password}).json(): # checking if username and password correspond
+                        json={"username": current_username_arg, "password": password_arg}).json(): # checking if username and password correspond
         print("This is not the right password please retry.")
         return
-    new_password = input("what will be your new password?:\n")
+    
+    if new_username_arg == "":
+        new_username_arg = input("what will be your new username\n: ")
+        
+    if not force:
+        if input("are you sure of changing your username?\n: ") != "yes": return
+        
+    
+    
+def change_password(username_arg: str = "", current_password_arg: str = "", new_password_arg: str = "", force: bool = False):
+    if username_arg != "":
+        username = username_arg
+    else: username = user_connected
+    
+    if current_password_arg != "":
+        current_password = current_password_arg
+    else: 
+        current_password = input("what is your current password?:\nif you don't remember please contact an admin(macto3001 on discord)")
+    
+    if not requests.post(global_var.server_adress+"/password_check",
+                          json={"username": username, "password": current_password}).json(): # checking if username and password correspond
+        print("This is not the right password please retry.")
+        return
+    
+    if new_password != "":
+        new_password = input("what will be your new password?:\n")
+    else: new_password = new_password_arg
+    
+    if not force:
+        if input("are you sure of changing password?\n: ") != "yes": return
+    
+    if requests.post(global_var.server_adress+"/change_password", params={
+        "username": username,
+        "old_password": current_password,
+        "new_password": new_password,
+    }).status_code == 200:
+        print("password changed succesfully")
+    else:
+        print("something went wrong please retry")
 
 def auto_connect():
     global user_connected
@@ -157,6 +216,7 @@ def connection():
             if choice == "register": register()
             elif choice == "login": login()
             elif choice == "disconnect": logout()
+            elif choice == "password": change_password()
             elif choice == "delete": delete_account()
             elif choice == "": break
             else: print("Use one of the proposition over, please retry.")

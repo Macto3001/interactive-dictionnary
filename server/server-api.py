@@ -30,6 +30,8 @@ active_token = load_pkl('active_token.pkl')
 admin_list = load_pkl('admin_list.pkl')
 if admin_list == {}:
     admin_list = ["admin"]
+if "admin" not in admin_list:
+    admin_list.append("admin")
 
 
 # get data
@@ -48,9 +50,8 @@ def get_user_data() -> list:
 def verify_research(data: dict):
 	print(f"received data: {data}")
 	if data['research'] in dico:
-		defintion = dico[data['research']]
-	else: defintion = None
-	return {"definition": defintion}
+		return {"definition": dico[data['research']]}
+	else: raise HTTPException(404, "research not found")
 
 @app.post("/change_data")
 def change_data(package: dict, request: Request) -> None:
@@ -63,7 +64,7 @@ def change_data(package: dict, request: Request) -> None:
 
 	if (len(word) > 30) or (len(def_data["def"]) > 500): # if word or def too long
 		print(f"{request.client.host} tried to send unvalid data")
-		return
+		raise HTTPException(413, "data too large")
 
 	print(f"new definition will be created by {request.client.host} :\"{word}: {def_data}\"")
 	dico[word] = def_data # adding def
@@ -72,6 +73,8 @@ def change_data(package: dict, request: Request) -> None:
 
 @app.post("/get_info")
 def get_info(defintion: dict, request: Request) -> dict:
+	if defintion["definition"] not in dico:
+		raise HTTPException(404, "definition not found")
 	print(f"sended data of '{defintion["definition"]}' to {request.client.host}")
 	return dico[defintion["definition"]] # returning data of only specif
 
@@ -86,14 +89,33 @@ def username_exist(username: dict, request: Request) -> bool:
 	return False
 
 @app.post("/password_check")
-def password_check(account_data: dict, request: Request) -> bool:
+def password_check(account_data: dict, request: Request = None) -> bool:
 	if  not account_data["username"] in user_data:
 		return False
 	if user_data[account_data["username"]] == account_data["password"]:
 		print(f"'{request.client.host}' succesfully checked '{account_data["username"]}' password")
 		return True
-	print(f"'{request.client.host}' tried to connes to '{account_data["username"]}' but failed because the password was wrong")
+	print(f"'{request.client.host}' tried to connect to '{account_data["username"]}' but failed because the password was wrong")
 	return False
+
+@app.post("/change_username")
+def change_username(old_username: str, new_username: str, password: str) -> None:
+    if not password_check({
+		"username": old_username,
+		"password": password,
+	}): raise HTTPException(401, "wrong password")
+        
+    
+    
+@app.post("/change_password")
+def change_password(username: str, old_password: str, new_password: str) -> None:
+    if not password_check({
+		"username": username,
+		"password": old_password,
+	}): raise HTTPException(401, "wrong password")
+    
+    user_data[username] = new_password
+
 
 @app.post("/register_account")
 def register_user_data(account_data: dict, request: Request):
@@ -102,7 +124,7 @@ def register_user_data(account_data: dict, request: Request):
 		user_data[username.lower()] = account_data["password"]
 		print(f"{request.client.host} has successfully register '{username}'")
 		update("user_data.pkl", user_data)
-	return f"this should not append aren't your a hacker '{request.client.host}'??"
+	else: raise HTTPException(401, "invalid account data")
 
 @app.post("/delete_account")
 def delete_account(account_data: dict, request: Request):
@@ -110,7 +132,7 @@ def delete_account(account_data: dict, request: Request):
 	if username in user_data and password_check(account_data, request):
 		user_data.__delitem__(username)
 		print(f"'{request.client.host}' has deleted the account '{username}'")
-	return f"this should not append aren't your a hacker '{request.client.host}'??"
+	else: raise HTTPException(401, "invalid account data")
 
 # token
 

@@ -57,10 +57,17 @@ changelog here
 
 24/04/2026:
 	- updated admin list architecture
-	- admin panel
+	- upgraded admin panel
 
 25/04/2026:
 	- upgraded admin list on server
 	- added admin account with forever admin access
 	- fixed lot of bug
 	- added idea in idea.txt
+
+26/04/2026:
+	- maked login function more versatile
+	- added server connection test for more operation
+	- fixed change_password function
+	- added change_password function on server side
+	- added idea

@@ -12,6 +12,7 @@ class Main:
         try:
             login.auto_connect()
             while True:
+                requests.get(global_var.server_adress) # connection test to the server
                 choice = input("Welcome to the interactive-Dictionnary\n"
                                "What do you want to do?:\n"
                                "- search word 'search'\n"

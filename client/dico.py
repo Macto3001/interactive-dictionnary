@@ -5,7 +5,7 @@ from datetime import datetime
 import login
 import global_var
 
-server_adress = "http://127.0.0.1:8000"
+server_adress = global_var.server_adress
 
 def dictionary():
 	while True:
@@ -15,8 +15,9 @@ def dictionary():
 			elif len(research) > 30: # if definition too long
 				print("This is too long please retry.")
 				continue
-			definition: str = requests.post(server_adress+"/verify_research", json={'research': research}).json()["definition"] # research the word on the server
-			if definition: # if definition already exist
+			definition_response: str = requests.post(server_adress+"/verify_research", json={'research': research}) # research the word on the server
+			if definition_response.status_code == 200: # if definition already exist
+				definition = definition_response.json()["definition"]
 				while True:
 					print(f'The definition of "{research}" is "{definition['def']}"')
 					choice: str = input("what do you want to do?:\n" # choice of possible action
@@ -62,7 +63,7 @@ def dictionary():
 			else: # if definition do not exist
 				print(f"'{research}' have no definition yet")
 				if login.user_connected == "Guest":
-					print("Connect youself to create one.")
+					print("Connect yourself to create one.")
 					continue
 
 				do_new_def = input(f"Do you want to create one as {login.user_connected} ?:\n")
